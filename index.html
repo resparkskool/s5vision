@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Life Vision Architect — Respark</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --yellow-1:#FFCF00;
+    --yellow-2:#FFE066;
+    --ember-1:#FF6A00;
+    --ember-2:#FF3D00;
+    --ember-3:#FFB000;
+    --paper:#FFF9E8;
+    --paper-warm:#FFF2CE;
+    --ink:#3A1F00;
+    --ink-soft:#5C3A12;
+    --maroon:#8A2A00;
+    --line:rgba(138,42,0,0.18);
+    --spark: 0.08;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 8% 4%, rgba(255,77,0,0.45), transparent 40%),
+      radial-gradient(circle at 95% 10%, rgba(255,140,0,0.35), transparent 45%),
+      radial-gradient(circle at 50% 110%, rgba(255,61,0,0.3), transparent 50%),
+      linear-gradient(160deg, var(--yellow-1), var(--yellow-2) 60%, var(--yellow-1));
+    background-attachment: fixed;
+    font-family:'Inter', system-ui, sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom: 60px;
+  }
+  .wrap{ max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+  .hero{ text-align:center; padding: 42px 20px 22px; position:relative; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.2em;
+    text-transform:uppercase; color: var(--maroon); font-weight:700; margin-bottom:12px;
+  }
+  h1.title{
+    font-family:'Fraunces', serif; font-weight:900; font-size: clamp(30px, 6.2vw, 50px);
+    line-height:1.04; margin:0; color: var(--maroon);
+    text-shadow: 0 0 26px rgba(255,107,0,0.5), 0 0 70px rgba(255,61,0,0.3);
+  }
+  .tagline{
+    font-family:'Fraunces', serif; font-style:italic; font-weight:500;
+    font-size: clamp(15px, 2vw, 18px); color: var(--ink-soft); margin-top:10px;
+  }
+
+  .ember-meter{
+    position:fixed; top:16px; right:16px; width:46px; height:46px; z-index:60;
+    display:flex; align-items:center; justify-content:center; pointer-events:none;
+  }
+  .ember-meter .glow{
+    position:absolute;
+    width: calc(50px + 70px * var(--spark));
+    height: calc(50px + 70px * var(--spark));
+    border-radius:50%;
+    background: radial-gradient(circle, rgba(255,100,0, calc(0.25 + 0.5 * var(--spark))), transparent 70%);
+    filter: blur(2px);
+    transition: width 0.6s ease, height 0.6s ease;
+  }
+  .ember-meter svg{
+    position:relative;
+    width: calc(18px + 12px * var(--spark));
+    height: calc(18px + 12px * var(--spark));
+    transition: width 0.6s ease, height 0.6s ease;
+    filter: drop-shadow(0 0 6px rgba(255,90,0,0.6));
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .ember-meter .glow{ animation: flicker 3.2s ease-in-out infinite; }
+  }
+  @keyframes flicker{ 0%,100%{opacity:1;} 50%{opacity:0.8;} }
+  .spark-label{
+    position:fixed; top:64px; right:16px; z-index:60;
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.05em;
+    color: var(--maroon); font-weight:700; opacity:0.75; text-align:right;
+  }
+
+  .tab-nav-sticky{
+    position: sticky; top: 0; z-index: 50;
+    background: linear-gradient(180deg, rgba(255,207,0,0.98), rgba(255,207,0,0.92));
+    backdrop-filter: blur(6px);
+    padding: 12px 20px 10px;
+    border-bottom: 2px solid rgba(138,42,0,0.15);
+    box-shadow: 0 6px 24px rgba(180,60,0,0.12);
+  }
+  .tab-nav{
+    max-width: 860px; margin: 0 auto; display:flex; gap:7px; flex-wrap:wrap; justify-content:center;
+  }
+  .tab-btn{
+    font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700;
+    letter-spacing:0.03em; text-transform:uppercase; padding:9px 13px;
+    border-radius:999px; border:1.5px solid rgba(138,42,0,0.25);
+    background: rgba(255,253,246,0.7); color: var(--ink-soft); cursor:pointer;
+    transition: all 0.18s ease; white-space:nowrap;
+  }
+  .tab-btn:hover{ background: rgba(255,253,246,0.95); border-color: var(--ember-1); color: var(--maroon); }
+  .tab-btn.active{
+    background: linear-gradient(90deg, var(--ember-1), var(--ember-2));
+    border-color: transparent; color:#fff7e6; box-shadow: 0 4px 16px rgba(255,61,0,0.4);
+  }
+  .tab-btn.visited:not(.active)::after{ content:" ✓"; opacity:0.5; font-size:10px; }
+
+  .progress-bar-wrap{ max-width:860px; margin: 8px auto 0; padding: 0 20px; }
+  .progress-bar{ height:5px; border-radius:4px; background: rgba(138,42,0,0.12); overflow:hidden; }
+  .progress-bar-fill{ height:100%; background: linear-gradient(90deg, var(--ember-3), var(--ember-1)); transition: width 0.5s ease; }
+
+  .tab-panel{ display:none; padding-top: 28px; }
+  .tab-panel.active{ display:block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .panel{
+    background: var(--paper); border-radius: 20px; padding: 32px 36px; margin-bottom: 20px;
+    box-shadow: 0 0 0 1px rgba(138,42,0,0.06), 0 18px 50px rgba(180,60,0,0.18), 0 0 80px rgba(255,150,0,0.12);
+    position:relative; overflow:hidden;
+  }
+  .panel::before{
+    content:""; position:absolute; top:-60px; right:-60px; width:180px; height:180px;
+    background: radial-gradient(circle, rgba(255,120,0,0.22), transparent 70%); pointer-events:none;
+  }
+  .panel h2{
+    font-family:'Fraunces', serif; font-weight:800; font-size: 24px; color: var(--maroon);
+    margin: 0 0 6px; display:flex; align-items:center; gap:10px;
+  }
+  .panel h2 .tag{ width:6px;height:6px;border-radius:50%; background: var(--ember-1); box-shadow: 0 0 12px var(--ember-1); flex:0 0 auto; }
+  .panel .sub{ font-size:13.5px; color: var(--ink-soft); font-style:italic; margin-bottom:16px; }
+  .panel p, .panel li{ font-size:15.5px; line-height:1.68; color: var(--ink); }
+  .panel p.soft{ color: var(--ink-soft); }
+  .panel ul{ padding-left:20px; margin:10px 0; }
+  .panel li{ margin-bottom:7px; }
+  .panel strong{ color: var(--maroon); }
+
+  .quote-box{
+    background: var(--paper-warm); border-left: 4px solid var(--ember-1); border-radius: 10px;
+    padding: 14px 18px; font-family:'Fraunces', serif; font-style: italic; font-size: 16px;
+    color: var(--maroon); margin: 16px 0;
+  }
+
+  label.field-label{
+    display:block; font-family:'JetBrains Mono', monospace; font-size:11px;
+    letter-spacing:0.06em; text-transform:uppercase; color: var(--maroon); margin: 18px 0 5px; font-weight:700;
+  }
+  .field-frame{ font-size:13px; font-style:italic; color: var(--ink-soft); margin: 0 0 7px; }
+
+  input[type=text], textarea{
+    width:100%; font-family:'Inter', sans-serif; font-size:15.5px;
+    padding: 12px 14px; border-radius:10px; border: 1.5px solid var(--line);
+    background:#fffdf6; color: var(--ink); outline:none; transition: border-color 0.15s ease;
+  }
+  textarea{ font-family:'JetBrains Mono', monospace; font-size:13px; line-height:1.6; resize:vertical; }
+  input[type=text]:focus, textarea:focus{ border-color: var(--ember-1); box-shadow: 0 0 0 3px rgba(255,107,0,0.12); }
+  input::placeholder, textarea::placeholder{ color: rgba(90,40,0,0.4); }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:8px; margin: 8px 0; }
+  .chip{
+    font-family:'Inter', sans-serif; font-size:13.5px; font-weight:600; padding: 7px 14px;
+    border-radius:999px; background: var(--paper-warm); border: 1.5px solid var(--line);
+    color: var(--ink); cursor:pointer; transition: all 0.2s ease; user-select:none;
+  }
+  .chip:hover{ border-color: var(--ember-1); }
+  .chip.selected{
+    background: linear-gradient(90deg, var(--ember-1), var(--ember-2)); color:#fff7e6; border-color:transparent;
+  }
+  .small-note{ font-size:12.5px; font-style:italic; color: var(--ink-soft); margin-top:4px; }
+
+  .btn-row{ display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:12px; flex-wrap:wrap; }
+  .btn{
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700; letter-spacing:0.03em;
+    text-transform:uppercase; padding: 13px 24px; border-radius:999px; border:none; cursor:pointer;
+    background: linear-gradient(90deg, var(--ember-1), var(--ember-2)); color:#fff7e6;
+    box-shadow: 0 6px 20px rgba(255,61,0,0.4); transition: transform 0.15s ease;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn.ghost{
+    background:none; color: var(--ink-soft); box-shadow:none; text-transform:none;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px; padding: 13px 8px;
+  }
+  .btn.ghost:hover{ color: var(--maroon); }
+  .btn.small{ padding: 9px 16px; font-size:11.5px; }
+
+  .pattern-card{
+    background: linear-gradient(165deg, #fffdf6, var(--paper-warm)); border: 1.5px solid var(--line);
+    border-radius: 18px; padding: 28px 26px; margin: 18px 0 8px; position:relative;
+  }
+  .pattern-card .ptag{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+    color: var(--maroon); font-weight:700; margin-bottom:12px;
+  }
+  .pattern-card .statement{
+    font-family:'Fraunces', serif; font-weight:700; font-size: clamp(17px,3vw,20px);
+    color: var(--maroon); line-height:1.55;
+  }
+  .pattern-card .statement em{ font-style:italic; color: var(--ember-2); }
+  .empty-note{
+    border: 2px dashed rgba(138,42,0,0.25); border-radius:10px; padding: 16px;
+    color: var(--ink-soft); font-style:italic; font-size:14px; text-align:center;
+  }
+
+  .ai-box{ position:relative; }
+  .copy-feedback{
+    font-family:'JetBrains Mono', monospace; font-size:11.5px; font-weight:700; color: var(--maroon);
+    margin-left:10px; opacity:0; transition: opacity 0.3s ease;
+  }
+  .copy-feedback.show{ opacity:1; }
+
+  a.skool-link{ color: var(--ember-2); font-weight:700; text-decoration:none; border-bottom: 1.5px solid var(--ember-2); }
+  a.skool-link:hover{ color: var(--maroon); border-color: var(--maroon); }
+
+  footer{
+    text-align:center; font-family:'JetBrains Mono', monospace; font-size:10.5px;
+    letter-spacing:0.06em; text-transform:uppercase; color: rgba(90,40,0,0.5); margin-top: 30px;
+    padding: 18px 20px 28px;
+  }
+  footer .footer-links{ margin-bottom:8px; }
+  footer .footer-links a{
+    color: rgba(90,40,0,0.6); text-decoration:none; border-bottom:1px solid rgba(90,40,0,0.25);
+  }
+  footer .footer-links a:hover{ color: var(--maroon); border-color: var(--maroon); }
+  footer .footer-links .dot{ margin:0 8px; opacity:0.5; }
+  footer .footer-meta{ font-size:10px; letter-spacing:0.04em; opacity:0.85; }
+  footer .footer-meta a{ color: inherit; text-decoration:underline; }
+  .eyebrow a, .body-link{
+    color: inherit; text-decoration:none; border-bottom: 1.5px solid currentColor; opacity:0.9;
+  }
+  .eyebrow a:hover, .body-link:hover{ opacity:1; }
+
+  @media (max-width: 560px){
+    .panel{ padding:24px 20px; }
+    .tab-btn{ font-size:10.5px; padding:7px 10px; }
+    .spark-label{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ember-meter" aria-hidden="true">
+  <div class="glow"></div>
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2C12 2 6 8.5 6 13.5C6 17.6 8.7 21 12 21C15.3 21 18 17.6 18 13.5C18 11.8 17.3 10 16.2 8.4C16.4 9.6 16.1 10.8 15.3 11.5C15.6 9 14 6.8 12 2Z" fill="#FF6A00"/>
+    <path d="M12 9C12 9 9.5 12 9.5 14.5C9.5 16.4 10.6 18 12 18C13.4 18 14.5 16.4 14.5 14.5C14.5 13 13.2 11.5 12 9Z" fill="#FFCF00"/>
+  </svg>
+</div>
+<div class="spark-label" id="sparkLabel">0% mapped</div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><a href="https://www.skool.com/respark" target="_blank" rel="noopener">Respark</a> · Integration</div>
+    <h1 class="title">Life Vision Architect</h1>
+    <div class="tagline">One fire, not five matches burning at once.</div>
+  </div>
+</div>
+
+<div class="tab-nav-sticky">
+  <div class="tab-nav" role="tablist">
+    <button class="tab-btn active" data-tab="start" onclick="goTab('start')">🔥 Start Here</button>
+    <button class="tab-btn" data-tab="map" onclick="goTab('map')">🧭 Domain Map</button>
+    <button class="tab-btn" data-tab="values" onclick="goTab('values')">🪶 Values &amp; Mission</button>
+    <button class="tab-btn" data-tab="future" onclick="goTab('future')">🔮 10-Year Vision</button>
+    <button class="tab-btn" data-tab="daily" onclick="goTab('daily')">☀️ Daily Alignment</button>
+    <button class="tab-btn" data-tab="pattern" onclick="goTab('pattern')">🪵 Your Vision</button>
+    <button class="tab-btn" data-tab="ai" onclick="goTab('ai')">🤖 Take It Further</button>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- START -->
+  <div class="tab-panel active" id="tab-start">
+    <div class="panel">
+      <h2><span class="tag"></span>Your Life Isn't Eight Separate Projects</h2>
+      <p>Most people manage their lives like a stack of unrelated tabs — career in one window, relationships in another, health somewhere you'll get to eventually. Each one gets attention only when it's loud enough to demand it. That's not a vision. That's triage.</p>
+      <p class="soft">An integrated life isn't one where every domain scores a 10. It's one where the domains actually talk to each other — where the way you work supports the way you love, and the way you rest supports both. That only happens on purpose. It doesn't happen by accident.</p>
+      <div class="quote-box">You don't need a better calendar. You need one vision your calendar can actually serve.</div>
+      <p>There's nothing to submit here. Move through the tabs above in order the first time — <strong>Domain Map → Values &amp; Mission → 10-Year Vision → Daily Alignment → Your Vision → Take It Further</strong> — each one builds on the last. After that, jump around however you like; everything stays right here on the page as you move between tabs.</p>
+      <div class="btn-row">
+        <span></span>
+        <button class="btn" onclick="goTab('map')">Map your domains →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="tab-panel" id="tab-map">
+    <div class="panel">
+      <h2><span class="tag"></span>Where the Fire's Actually Burning Low</h2>
+      <p class="sub">Eight domains, one ecosystem</p>
+      <p>Your life runs across eight domains: <strong>Purpose &amp; Meaning</strong>, <strong>Relationships</strong>, <strong>Health &amp; Vitality</strong>, <strong>Career &amp; Impact</strong>, <strong>Financial Freedom</strong>, <strong>Personal Growth</strong>, <strong>Joy &amp; Recreation</strong>, and <strong>Environment</strong>. None of them operate in isolation — when one is starving, the others quietly compensate, until they can't anymore.</p>
+
+      <label class="field-label">Which domain feels weakest right now?</label>
+      <div class="chip-row" id="lowestChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">Which one is already carrying more weight than it should?</label>
+      <div class="chip-row" id="highestChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">If that weakest domain got even 10% better, what would actually change first?</label>
+      <input type="text" id="domainFocusAns" placeholder="be specific" oninput="updateSpark()">
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('start')">← back</button>
+        <button class="btn" onclick="goTab('values')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUES -->
+  <div class="tab-panel" id="tab-values">
+    <div class="panel">
+      <h2><span class="tag"></span>What You Build the Vision On</h2>
+      <p class="sub">Values are the non-negotiables, mission is the why</p>
+      <p>A vision built on borrowed values — what looks impressive, what your industry rewards, what your family expects — collapses the moment it gets hard. A vision built on your actual values holds, because it's not performing for anyone. It's just true.</p>
+
+      <label class="field-label">Which of these values do you feel most disconnected from right now?</label>
+      <div class="chip-row" id="valueChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">What would living that value fully look like this month?</label>
+      <input type="text" id="valueLivedAns" placeholder="be concrete" oninput="updateSpark()">
+
+      <label class="field-label" style="margin-top:22px;">"My mission is to…"</label>
+      <p class="field-frame">Doesn't need to be perfect or permanent — just true right now.</p>
+      <input type="text" id="missionAns" placeholder="draft it" oninput="updateSpark()">
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('map')">← back</button>
+        <button class="btn" onclick="goTab('future')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUTURE -->
+  <div class="tab-panel" id="tab-future">
+    <div class="panel">
+      <h2><span class="tag"></span>If Nothing Changed</h2>
+      <p class="sub">Ten years is far enough to dream, close enough to act</p>
+      <p>Without a clear vision, ten years from now just happens to you — built entirely out of whatever today's pressures and other people's expectations decided for you. With a vision, ten years from now gets built on purpose, one aligned choice at a time, starting today.</p>
+
+      <label class="field-label">If absolutely nothing changed from here, where would you likely be in 10 years?</label>
+      <div class="chip-row" id="stuckChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">What's most likely to get in the way between here and the life you actually want?</label>
+      <div class="chip-row" id="obstacleChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">In one sentence, the life you actually want in 10 years is…</label>
+      <input type="text" id="tenYearAns" placeholder="one sentence, no hedging" oninput="updateSpark()">
+
+      <div id="cycleSentenceContainer" style="margin-top:18px;"></div>
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('values')">← back</button>
+        <button class="btn" onclick="goTab('daily')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY -->
+  <div class="tab-panel" id="tab-daily">
+    <div class="panel">
+      <h2><span class="tag"></span>Vision Lives or Dies in the Daily Choices</h2>
+      <p class="sub">A North Star you never look at isn't guiding anything</p>
+      <p>A ten-year vision means nothing if it only lives on a board you glance at twice a year. It needs a small, repeatable touchpoint — something short enough that you'll actually keep doing it past week one.</p>
+
+      <label class="field-label">Which daily touchpoint are you actually willing to keep?</label>
+      <div class="chip-row" id="practiceChips"></div>
+
+      <label class="field-label" style="margin-top:22px;">The one practice you'll actually keep this week is…</label>
+      <input type="text" id="alignCommitAns" placeholder="be specific and small" oninput="updateSpark()">
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('future')">← back</button>
+        <button class="btn" onclick="goTab('pattern')">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATTERN -->
+  <div class="tab-panel" id="tab-pattern">
+    <div class="panel">
+      <h2><span class="tag"></span>Your Vision, All in One Place</h2>
+      <p class="sub">Not a finished document — a living first draft</p>
+      <p>Here's everything you've named, woven into one read of where you are, where you're headed, and what you're actually going to do about it.</p>
+
+      <div id="patternContainer"></div>
+      <p class="soft" style="margin-top:14px;">Come back and edit any answer on an earlier tab and this updates on its own. Nothing here needs to be perfect — it just needs to be true.</p>
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('daily')">← back</button>
+        <button class="btn" onclick="goTab('ai')">Take it further →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI -->
+  <div class="tab-panel" id="tab-ai">
+    <div class="panel">
+      <h2><span class="tag"></span>Take It Further</h2>
+      <p class="sub">Optional — for when the page isn't enough</p>
+      <p>A page can only collect your first honest draft. A real conversation can ask the better follow-up — what's actually been keeping your weakest domain weak, what a realistic 90-day milestone toward your 10-year vision would look like, and what's been making the daily practice harder to keep than it should be.</p>
+      <p>The box below compiles everything you've entered into a single prompt. Copy it and paste it into Claude, ChatGPT, or whatever AI assistant you use, and let it work the thread with you instead of just receiving it.</p>
+      <div class="ai-box">
+        <textarea id="aiPrompt" rows="15" readonly></textarea>
+        <div style="margin-top:12px;">
+          <button class="btn small" onclick="copyPrompt()">Copy prompt</button>
+          <span class="copy-feedback" id="copyFeedback">Copied.</span>
+        </div>
+      </div>
+      <p style="margin-top:26px;">If you want to keep building this past today, the fuller version goes deeper into all five embers we work with at <a class="body-link" href="https://www.skool.com/respark" target="_blank" rel="noopener">Respark</a> — Identity, Emotional Intelligence, Beliefs &amp; Patterns, Relationships, and Integration. It's inside the community whenever you're ready, not before.</p>
+      <div class="quote-box">Your vision isn't a finished blueprint. It's a North Star — close enough to act on today, big enough to still be true in ten years.</div>
+      <p><a class="skool-link" href="https://www.skool.com/respark" target="_blank" rel="noopener">Find it inside Respark →</a></p>
+      <div class="btn-row">
+        <button class="btn ghost" onclick="goTab('pattern')">← back to your vision</button>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-links">
+    <a href="https://resparkskool.github.io/legal#privacy" target="_blank" rel="noopener">Privacy Policy</a><span class="dot">·</span>
+    <a href="https://resparkskool.github.io/legal#terms" target="_blank" rel="noopener">Terms of Service</a><span class="dot">·</span>
+    <a href="https://resparkskool.github.io/legal#disclaimer" target="_blank" rel="noopener">Disclaimer</a><span class="dot">·</span>
+    <a href="https://resparkskool.github.io/legal#cookies" target="_blank" rel="noopener">Cookie Policy</a>
+  </div>
+  <div class="footer-meta">
+    <a href="https://www.skool.com/respark" target="_blank" rel="noopener">Respark</a> · 30 North Gould Street, Suite R, Sheridan, WY 82801 · <a href="mailto:respark.skool@gmail.com">respark.skool@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+  const visited = new Set(['start']);
+  const DOMAINS = ['Purpose & Meaning','Relationships','Health & Vitality','Career & Impact','Financial Freedom','Personal Growth','Joy & Recreation','Environment'];
+  const VALUES = ['Authenticity','Freedom','Connection','Growth','Security','Adventure','Integrity','Peace','Service','Stability'];
+  const STUCK_FEELINGS = ['Drifting','Comfortable but unfulfilled','Successful but disconnected','Resentful','Stable but bored'];
+  const OBSTACLES = ['Time','Money','Fear','Other people\'s expectations','Lack of clarity','An old identity I haven\'t let go of'];
+  const PRACTICES = ['A 2-minute morning vision check-in','A midday alignment reset','A 5-minute evening reflection','A weekly planning session'];
+
+  let state = {
+    lowestDomain:'', highestDomain:'', valueChip:'', stuckChip:'', obstacleChip:'', practiceChip:''
+  };
+
+  function buildSingleSelect(containerId, list, stateKey){
+    const wrap = document.getElementById(containerId);
+    wrap.innerHTML = '';
+    list.forEach(item => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = item;
+      chip.onclick = () => {
+        wrap.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        state[stateKey] = item;
+        updateSpark();
+        if(stateKey === 'stuckChip' || stateKey === 'obstacleChip') buildCycleSentence();
+      };
+      wrap.appendChild(chip);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function buildCycleSentence(){
+    const tenYear = document.getElementById('tenYearAns').value.trim();
+    const container = document.getElementById('cycleSentenceContainer');
+    if(!tenYear && !state.stuckChip && !state.obstacleChip){
+      container.innerHTML = '';
+      return;
+    }
+    let html = '<div class="pattern-card"><div class="ptag">The Fork in the Road</div><div class="statement">';
+    html += 'If nothing changes, the path you\'re on leads to <em>' + escapeHtml(state.stuckChip || 'a place you haven\'t named yet') + '</em>, mostly because of <em>' + escapeHtml(state.obstacleChip || 'an obstacle you haven\'t named yet') + '</em>. ';
+    html += 'The life you actually want instead is <em>' + escapeHtml(tenYear || 'one you\'re still putting into words') + '</em> — and the gap between those two paths is exactly where your vision gets to do its work.';
+    html += '</div></div>';
+    container.innerHTML = html;
+  }
+
+  function buildPatternMap(){
+    const domainFocus = document.getElementById('domainFocusAns').value.trim();
+    const valueLived = document.getElementById('valueLivedAns').value.trim();
+    const mission = document.getElementById('missionAns').value.trim();
+    const tenYear = document.getElementById('tenYearAns').value.trim();
+    const alignCommit = document.getElementById('alignCommitAns').value.trim();
+    const container = document.getElementById('patternContainer');
+
+    const anyData = state.lowestDomain || domainFocus || state.valueChip || valueLived || mission || state.stuckChip || state.obstacleChip || tenYear || state.practiceChip || alignCommit;
+    if(!anyData){
+      container.innerHTML = '<div class="empty-note">Work through the earlier tabs and your vision will build itself here.</div>';
+      return;
+    }
+
+    let html = '<div class="pattern-card"><div class="ptag">Your Living Vision</div><div class="statement">';
+    html += 'Your mission right now is <em>' + escapeHtml(mission || 'one you\'re still drafting') + '</em>. ';
+    html += 'The domain that needs the most attention is <em>' + escapeHtml(state.lowestDomain || 'one you haven\'t named yet') + '</em>, and the first real shift there is <em>' + escapeHtml(domainFocus || 'still taking shape') + '</em>. ';
+    html += 'The value you\'re reconnecting to is <em>' + escapeHtml(state.valueChip || 'one you haven\'t chosen yet') + '</em>, lived fully by <em>' + escapeHtml(valueLived || 'an action you\'re still defining') + '</em>. ';
+    html += 'Left unattended, this drifts toward <em>' + escapeHtml(state.stuckChip || 'a default outcome') + '</em> because of <em>' + escapeHtml(state.obstacleChip || 'a real obstacle') + '</em> — but the life you\'re actually building toward is <em>' + escapeHtml(tenYear || 'one you\'re still writing') + '</em>. ';
+    html += 'You\'re keeping it alive day to day through <em>' + escapeHtml(state.practiceChip || 'a practice you haven\'t chosen yet') + '</em>, starting with <em>' + escapeHtml(alignCommit || 'one small, specific step') + '</em>.';
+    html += '</div></div>';
+    container.innerHTML = html;
+  }
+
+  function buildAiPrompt(){
+    const domainFocus = document.getElementById('domainFocusAns').value.trim() || '(not yet answered)';
+    const valueLived = document.getElementById('valueLivedAns').value.trim() || '(not yet answered)';
+    const mission = document.getElementById('missionAns').value.trim() || '(not yet answered)';
+    const tenYear = document.getElementById('tenYearAns').value.trim() || '(not yet answered)';
+    const alignCommit = document.getElementById('alignCommitAns').value.trim() || '(not yet answered)';
+
+    const prompt =
+'Act as a thoughtful guide in integrated life design — warm, direct, and willing to push for specificity rather than handing me generic goal-setting advice.\n\n' +
+'Here is the life vision draft I just mapped:\n\n' +
+'MY DRAFT MISSION: ' + mission + '\n\n' +
+'WEAKEST LIFE DOMAIN RIGHT NOW: ' + (state.lowestDomain || '(not yet answered)') + '\n\n' +
+'DOMAIN ALREADY CARRYING TOO MUCH WEIGHT: ' + (state.highestDomain || '(not yet answered)') + '\n\n' +
+'WHAT WOULD CHANGE FIRST IF THE WEAK DOMAIN IMPROVED 10%: ' + domainFocus + '\n\n' +
+'VALUE I FEEL MOST DISCONNECTED FROM: ' + (state.valueChip || '(not yet answered)') + '\n\n' +
+'WHAT LIVING THAT VALUE FULLY LOOKS LIKE THIS MONTH: ' + valueLived + '\n\n' +
+'WHERE I DRIFT TO IF NOTHING CHANGES: ' + (state.stuckChip || '(not yet answered)') + '\n\n' +
+'THE REAL OBSTACLE IN MY WAY: ' + (state.obstacleChip || '(not yet answered)') + '\n\n' +
+'THE LIFE I ACTUALLY WANT IN 10 YEARS, IN ONE SENTENCE: ' + tenYear + '\n\n' +
+'THE DAILY PRACTICE I\'M CHOOSING: ' + (state.practiceChip || '(not yet answered)') + '\n\n' +
+'MY COMMITMENT THIS WEEK: ' + alignCommit + '\n\n' +
+'Please do the following:\n' +
+'1. Reflect back to me, in your own words, the actual gap between where I\'m drifting and the life I said I want — not a summary, an actual observation.\n' +
+'2. Ask me whether the obstacle I named is the real one, or whether something underneath it is actually running the show.\n' +
+'3. Help me design one realistic 90-day milestone that moves my weakest domain meaningfully toward my 10-year vision.\n' +
+'4. Ask me one honest follow-up question about what\'s been making my daily practice harder to keep than it should be.';
+
+    document.getElementById('aiPrompt').value = prompt;
+  }
+
+  function copyPrompt(){
+    const ta = document.getElementById('aiPrompt');
+    ta.select();
+    navigator.clipboard && navigator.clipboard.writeText(ta.value).then(showCopied).catch(() => {
+      document.execCommand('copy'); showCopied();
+    });
+  }
+  function showCopied(){
+    const fb = document.getElementById('copyFeedback');
+    fb.classList.add('show');
+    setTimeout(() => fb.classList.remove('show'), 1800);
+  }
+
+  function updateSpark(){
+    let filled = 0;
+    const total = 11;
+    if(state.lowestDomain) filled += 1;
+    if(state.highestDomain) filled += 1;
+    if(document.getElementById('domainFocusAns').value.trim()) filled += 1;
+    if(state.valueChip) filled += 1;
+    if(document.getElementById('valueLivedAns').value.trim()) filled += 1;
+    if(document.getElementById('missionAns').value.trim()) filled += 1;
+    if(state.stuckChip) filled += 1;
+    if(state.obstacleChip) filled += 1;
+    if(document.getElementById('tenYearAns').value.trim()) filled += 1;
+    if(state.practiceChip) filled += 1;
+    if(document.getElementById('alignCommitAns').value.trim()) filled += 1;
+    const pct = Math.min(1, filled / total);
+    document.documentElement.style.setProperty('--spark', pct.toFixed(2));
+    document.getElementById('sparkLabel').textContent = Math.round(pct*100) + '% mapped';
+    document.getElementById('progressFill').style.width = (Math.round(pct*100)) + '%';
+  }
+
+  function goTab(name){
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelector('.tab-btn[data-tab="' + name + '"]').classList.add('active');
+    visited.add(name);
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      if(visited.has(b.getAttribute('data-tab')) && b.getAttribute('data-tab') !== name){
+        b.classList.add('visited');
+      }
+    });
+    if(name === 'future') buildCycleSentence();
+    if(name === 'pattern') buildPatternMap();
+    if(name === 'ai') buildAiPrompt();
+    window.scrollTo({top:0, behavior:'smooth'});
+    updateSpark();
+  }
+
+  buildSingleSelect('lowestChips', DOMAINS, 'lowestDomain');
+  buildSingleSelect('highestChips', DOMAINS, 'highestDomain');
+  buildSingleSelect('valueChips', VALUES, 'valueChip');
+  buildSingleSelect('stuckChips', STUCK_FEELINGS, 'stuckChip');
+  buildSingleSelect('obstacleChips', OBSTACLES, 'obstacleChip');
+  buildSingleSelect('practiceChips', PRACTICES, 'practiceChip');
+  updateSpark();
+</script>
+
+</body>
+</html>
